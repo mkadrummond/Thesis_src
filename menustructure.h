@@ -13,6 +13,7 @@ MenuController *controller;
 
 MenuNode *rootElement;
 	MenuNode *setup;
+		MenuNode *chooseMuscle;
 		MenuNode *mountUSB;
 		MenuNode *unMountUSB;
 		MenuNode *runWarmUp;

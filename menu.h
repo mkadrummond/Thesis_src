@@ -29,7 +29,7 @@ public:
 	std::vector<MenuNode*> v;	// vector that holds the children
 									// the first element may also be the parent
 	int displayOffset;
-	int *displayOffsetPtr;
+	//int *displayOffsetPtr;
 	int vectorCursor;
 
 

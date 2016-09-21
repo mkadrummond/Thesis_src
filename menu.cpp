@@ -18,9 +18,10 @@ MenuNode::MenuNode(){
 }
 MenuNode::MenuNode(std::string name) {
 	this->name = name;
-	this->pressure = NULL;
+	this->pressure = 0;
+	this->force = 0;
 	displayOffset = 0;
-	displayOffsetPtr = &displayOffset;
+	//displayOffsetPtr = &displayOffset;
 	vectorCursor = 0;
 
 }
