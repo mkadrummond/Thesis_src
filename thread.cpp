@@ -13,10 +13,8 @@ using namespace std;
 
 pthread_t          	thread;
 struct sched_param 	param;
-//int 				threadPriority;
 int 				rc;
 int 				policy;
-//int 				theChangedPriority;
 
 void checkResults(std::string str, int val) {
 	if (val) {
@@ -35,14 +33,14 @@ int showSchedParam(pthread_t thread) {
 }
 
 
-int startThread(void *(*threadfunc) (void *)) {
+//int startThread(void *(*threadfunc) (void *)) {
+int startThread(void *(*threadfunc) (void *), float *arg) {
 
-	//threadPriority =0;
 	rc = 0;
 	policy = SCHED_RR; 	// Round Robin
-	//theChangedPriority = 0;
 
-	rc = pthread_create(&thread, NULL, threadfunc, NULL);
+	//rc = pthread_create(&thread, NULL, threadfunc, NULL);
+	rc = pthread_create(&thread, NULL, threadfunc, arg);
 	checkResults("pthread_create", rc);
 
 	usleep(100000);

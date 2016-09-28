@@ -125,3 +125,9 @@ Menu::MenuNodeFactory::MenuNodeFactory() {
 Menu::MenuNode* Menu::MenuNodeFactory::createMenuNode(std::string name) {
 	return new MenuNode(name);
 }
+Menu::MenuNode* Menu::MenuNodeFactory::createMenuNode(std::string name, int (*pt2Func)()) {
+	return new MenuNode(name, pt2Func);
+}
+//Menu::MenuNode* Menu::MenuNodeFactory::createMenuNode(std::string name, int (*pt2Func)(), float pressure, int length) {
+//	return new MenuNode(name, pt2Func, pressure, length);
+//}

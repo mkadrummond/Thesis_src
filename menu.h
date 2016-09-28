@@ -31,6 +31,7 @@ namespace Menu {
 		MenuNode();
 		MenuNode(std::string);	// constructor with name
 		MenuNode(std::string, MenuNode*);	// constructor with parent
+		//MenuNode(std::string, MenuNode*, float, int);	// with pressure and length
 		MenuNode(std::string, int (*)(void));	// constructor with useNode function
 		MenuNode(std::string, MenuNode*, int (*)(void));	// constructor with parent and useNode function
 
@@ -98,6 +99,8 @@ namespace Menu {
 	public:
 		MenuNodeFactory();
 		MenuNode *createMenuNode(std::string);
+		MenuNode *createMenuNode(std::string, int (*)(void));
+		MenuNode *createMenuNode(std::string, int (*)(void), float, int);
 	};
 
 	// A variable to keep track of where we are in the menu

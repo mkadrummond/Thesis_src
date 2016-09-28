@@ -15,6 +15,6 @@
 
 void checkResults(int);
 int showSchedParam(pthread_t);
-int startThread(void *(*) (void *));
+int startThread(void *(*) (void *), float*);
 
 #endif /* THREAD_H_ */

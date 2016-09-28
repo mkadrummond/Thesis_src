@@ -74,8 +74,8 @@ void lcd_write(int, int);
 void write_cmd(int);
 void lcd_display_string(std::string, int);
 void lcd_display_int(int, int);
-void lcd_display_cursor(int);
 void lcd_display_float(float, int);
+void clearDisplay();
 
 
 

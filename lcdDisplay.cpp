@@ -16,8 +16,6 @@ void initI2C() {
 	char *dev = "/dev/i2c-2";
 	int addr = 0x27;
 
-	printf("LCD Display Test!\n");
-
 	fd = open(dev, O_RDWR );
 
 	if(fd < 0) {
@@ -86,72 +84,6 @@ void lcd_display_string(std::string string, int line) {
         lcd_write(x, Rs);
 	}
 }
-/*
-// display int
-// the additional lines (5 to 8) are for placing the
-// cursor along the right hand side of the display
-void lcd_display_float(int var, int line) {
-	if (line == 1)
-    	lcd_write(0x80, 0);
-	if (line == 2)
-    	lcd_write(0xC0, 0);
-	if (line == 3)
-		lcd_write(0x94, 0);
-	if (line == 4)
-		lcd_write(0xD4, 0);
-	if (line == 5)
-    	lcd_write(0x90, 0);
-	if (line == 6)
-    	lcd_write(0xD0, 0);
-	if (line == 7)
-    	lcd_write(0xA4, 0);
-	if (line == 8)
-    	lcd_write(0xE4, 0);
-
-	char buffer[10];
-
-	//snprintf(buffer, 10, "%d", var);
-	int normSig = var/1000; // establish the normalised significand
-	snprintf(buffer, 10, "%d.%d ", normSig, (var-normSig*1000)/10);
-										// This modification makes sure that
-										// old values are completely removed
-										// from the display
-	lcd_display_string(buffer, line);
-}
-*/
-// display int
-// the additional lines (5 to 8) are for placing the
-// cursor along the right hand side of the display
-void lcd_display_float(float var, int line) {
-	if (line == 1)
-    	lcd_write(0x80, 0);
-	if (line == 2)
-    	lcd_write(0xC0, 0);
-	if (line == 3)
-		lcd_write(0x94, 0);
-	if (line == 4)
-		lcd_write(0xD4, 0);
-	if (line == 5)
-    	lcd_write(0x90, 0);
-	if (line == 6)
-    	lcd_write(0xD0, 0);
-	if (line == 7)
-    	lcd_write(0xA4, 0);
-	if (line == 8)
-    	lcd_write(0xE4, 0);
-
-	char buffer[10];
-
-	snprintf(buffer, 10, "%.2f", var);
-	//int normSig = var/1000; // establish the normalised significand
-	//snprintf(buffer, 10, "%d.%d ", normSig, (var-normSig*1000)/10);
-										// This modification makes sure that
-										// old values are completely removed
-										// from the display
-	lcd_display_string(buffer, line);
-}
-
-
 
 // display int
 // the additional lines (5 to 8) are for placing the
@@ -179,4 +111,36 @@ void lcd_display_int(int var, int line) {
 	snprintf(buffer, 10, "%d  ", var);
 
 	lcd_display_string(buffer, line);
+}
+
+// display float
+// the additional lines (5 to 8) are for placing the
+// cursor along the right hand side of the display
+void lcd_display_float(float var, int line) {
+	if (line == 1)
+    	lcd_write(0x80, 0);
+	if (line == 2)
+    	lcd_write(0xC0, 0);
+	if (line == 3)
+		lcd_write(0x94, 0);
+	if (line == 4)
+		lcd_write(0xD4, 0);
+	if (line == 5)
+    	lcd_write(0x90, 0);
+	if (line == 6)
+    	lcd_write(0xD0, 0);
+	if (line == 7)
+    	lcd_write(0xA4, 0);
+	if (line == 8)
+    	lcd_write(0xE4, 0);
+
+	char buffer[10];
+
+	snprintf(buffer, 10, "%.2f", var);
+
+	lcd_display_string(buffer, line);
+}
+
+void clearDisplay() {
+	lcd_write(LCD_CLEARDISPLAY, 0);
 }
