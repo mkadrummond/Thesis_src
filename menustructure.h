@@ -9,22 +9,10 @@
 #define MENUSTRUCTURE_H_
 
 
-MenuController *controller;
 
-MenuNode *rootElement;
-	MenuNode *setup;
-		MenuNode *chooseMuscle;
-		MenuNode *mountUSB;
-		MenuNode *unMountUSB;
-		MenuNode *runWarmUp;
-	MenuNode *manual;
-	MenuNode *automatic;
-		MenuNode *pressurePoints;
-			MenuNode *addNew;
-		MenuNode *setLengths;
-		MenuNode *startProgram;
-		MenuNode *uploadToUSB;
-	MenuNode *shutdownBBB;
+
+
+
 
 
 

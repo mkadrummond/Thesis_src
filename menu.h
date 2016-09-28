@@ -17,78 +17,92 @@
 #include <string>
 #include "eqep.h"
 
-class MenuNode;
+namespace Menu {
 
-class MenuNode {
-public:
-	MenuNode();
-	MenuNode(std::string);	// constructor with name
-	MenuNode(std::string, MenuNode*);	// constructor with parent
+	class MenuNode;
 
-	std::string name;
-	std::vector<MenuNode*> v;	// vector that holds the children
-									// the first element may also be the parent
-	int displayOffset;
-	//int *displayOffsetPtr;
-	int vectorCursor;
+	class MenuNode {
+	public:
+
+		float pressure;
+		int length;
+		float force;
+
+		MenuNode();
+		MenuNode(std::string);	// constructor with name
+		MenuNode(std::string, MenuNode*);	// constructor with parent
+		MenuNode(std::string, int (*)(void));	// constructor with useNode function
+		MenuNode(std::string, MenuNode*, int (*)(void));	// constructor with parent and useNode function
+
+		std::string name;
+		std::vector<MenuNode*> v;	// vector that holds the children
+										// the first element may also be the parent
+		int displayOffset;
+		int vectorCursor;
 
 
-	void setChild(MenuNode*);
-	void moveUp(bool);
-	void moveDown(bool);
-	void action(bool);
-	std::string getName();
-	void setName(std::string);
+		void setChild(MenuNode*);
+		void moveUp(bool);
+		void moveDown(bool);
+		void action(bool);
+		std::string getName();
+		void setName(std::string);
 
-	std::vector<MenuNode*> getVector();
-	void setVector(std::vector<MenuNode*>);
-	//void useElement();
-	//int passPtr(int (*pt2Func)(int));
-	//int useElement (int x, eQEP& encoder, int (*moo)(int, eQEP&));
-	int useElement (int x, int (*moo)(int));
+		std::vector<MenuNode*> getVector();
+		void setVector(std::vector<MenuNode*>);
+		//void useElement();
+		int passPtr(int (*pt2Func)());
+		//int useElement (int (*moo)(int, eQEP&));
+		int (*useNode)();
 
-	void setPressure(int);
-	int getPressure();
-	void setForce(int);
-	int getForce();
 
-	~MenuNode();
+		/*
+		void setPressure(float);
+		float getPressure();
+		void setLength(int);
+		int getLength();
+		void setForce(float);
+		float getForce();
+		*/
 
-private:
-	int pressure;
-	int length;
-	int force;
+		~MenuNode();
 
-};
+	private:
 
-class MenuController {
-public:
-	MenuController();
-	MenuNode *current;
 
-	MenuNode* getCurrent();
-	void setCurrent(MenuNode*);
-
-	~MenuController();
-};
-
+	};
 /*
-class MenuTerminalNode: public MenuNode {
-public:
-	MenuTerminalNode();
-	void setValue(int);
-	int getValue();
-private:
-	int value;
-};
+	class MenuController {
+	public:
+		MenuController();
+		MenuNode *current;
+
+		MenuNode* getCurrent();
+		void setCurrent(MenuNode*);
+
+		~MenuController();
+	};
 */
+	/*
+	class MenuTerminalNode: public MenuNode {
+	public:
+		MenuTerminalNode();
+		void setValue(int);
+		int getValue();
+	private:
+		int value;
+	};
+	*/
 
-class MenuNodeFactory {
-public:
-	MenuNodeFactory();
-	MenuNode *createMenuNode(std::string);
-};
+	class MenuNodeFactory {
+	public:
+		MenuNodeFactory();
+		MenuNode *createMenuNode(std::string);
+	};
 
+	// A variable to keep track of where we are in the menu
+	extern Menu::MenuNode *current;
 
+}
 
 #endif /* MENU_H_ */

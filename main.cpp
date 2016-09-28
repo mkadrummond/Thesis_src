@@ -56,6 +56,8 @@
 // Menu structure
 #include "menustructure.h"
 #include <sstream> //required for the terminal nodes
+#include "ui.h"
+
 
 // Mounting USB
 #include <sys/mount.h>
@@ -79,7 +81,6 @@ GPIO 	*button1GPIO,
 		*switch2GPIO,
 		*switch3GPIO;
 
-
 // CAN-bus
 CANSocket *can0;
 
@@ -90,9 +91,9 @@ eQEP *encoder;
 PID *pidControl;
 
 
-int manualPressure(int);
+//int manualPressure(int);
 float binary2Bar(int);
-//int bar2Binary(int);
+float binary2Newton(int);
 int readAnalog(int);
 
 // MenuNode use cases
@@ -100,8 +101,11 @@ int useRoot();
 int useSetup();
 int useMountUSB();
 int useUnMountUSB();
-int useManualMenuNode();
-int useShutdownMenuNode();
+int useManual();
+int useShutdown();
+int useProgram();
+	int useAddNewLength();
+		int useSetLength();
 int usePressurePoints();
 int useAddNew();
 int useSetPressure();
@@ -110,23 +114,18 @@ int useStartProgram();
 int useUploadToUSB();
 int useChooseMuscle();
 
-int displayMenu(MenuNode*);
-int updateDisplay(MenuNode*);
+int displayMenu(Menu::MenuNode*);
+int updateDisplay(Menu::MenuNode*);
+
+void debug();
 
 int choiceOfMuscle;
 
-
-// The display is only 4 lines, so if the menu list has more than 4 items
-// I use an offset to allow what is actually displayed to shift up and down
-// with the cursor.
-//int displayOffsetPtr;
-//int vectorCursor;
-
 double pressureInBinary;
-double pressureSetPoint;
+float pressureSetPoint;
 double pressureInBar;
 
-int encoderPosition;
+//int encoderPosition;
 
 bool exitThread;
 
@@ -217,42 +216,59 @@ int main() {
 
 	/*** Prepare the GUI menu structure ***/
 
-	controller = new MenuController();
+    //ui::initMenu();
+    //ui::createMenu();
 
-	// Create the menu node elements
-	rootElement = new MenuNode("root");
-		setup = new MenuNode("Setup");
-			chooseMuscle = new MenuNode("Choose Muscle");
-			mountUSB = new MenuNode("Mount USB");
-			unMountUSB = new MenuNode("Unmount USB");
-			runWarmUp = new MenuNode("Run warm up");
-		manual = new MenuNode("Manual");
-		automatic = new MenuNode("Automatic");
-			pressurePoints = new MenuNode("Set pressure points");
-				addNew = new MenuNode("Add new");
-			setLengths = new MenuNode("Set lengths");
-			startProgram = new MenuNode("Start program");
-			uploadToUSB = new MenuNode("Upload data to USB");
-		shutdownBBB = new MenuNode("Shutdown");
-
-	// Create the menu structure by defining child/parent elements
-	rootElement->setChild(setup);
-		setup->setChild(chooseMuscle);
+/*
+	   // Create the menu structure by defining child/parent elements
+	ui::root->setChild(ui::setup);
+		ui::setup->setChild(chooseMuscle);
 		setup->setChild(mountUSB);
 		setup->setChild(unMountUSB);
 		setup->setChild(runWarmUp);
-	rootElement->setChild(manual);
-	rootElement->setChild(automatic);
+	root->setChild(manual);
+	root->setChild(automatic);
+		automatic->setChild(program);
+			program->setChild(addNewLength);
 		automatic->setChild(pressurePoints);
 			pressurePoints->setChild(addNew);
 		automatic->setChild(setLengths);
 		automatic->setChild(startProgram);
 		automatic->setChild(uploadToUSB);
-	rootElement->setChild(shutdownBBB);
+	root->setChild(shutdownBBB);
+*/
+/*
+	// Create the menu node elements
+	root = new Menu::MenuNode("root");
+		//setup = new Menu::MenuNode("Setup");
+			chooseMuscle = new Menu::MenuNode("Choose Muscle");
+			mountUSB = new Menu::MenuNode("Mount USB");
+			unMountUSB = new Menu::MenuNode("Unmount USB");
+			runWarmUp = new Menu::MenuNode("Run warm up");
+		manual = new Menu::MenuNode("Manual");
+		automatic = new Menu::MenuNode("Automatic");
+			program = new Menu::MenuNode("Program");
+				addNewLength = new Menu::MenuNode("Add new length");
+			pressurePoints = new Menu::MenuNode("Set pressure points");
+				addNew = new Menu::MenuNode("Add new");
+			setLengths = new Menu::MenuNode("Set lengths");
+			startProgram = new Menu::MenuNode("Start program");
+			uploadToUSB = new Menu::MenuNode("Upload data to USB");
+		shutdownBBB = new Menu::MenuNode("Shutdown");
+
+*/
+
+
 
 	// On start the menu will be at the root node
-	controller->setCurrent(rootElement);
-	//std::vector<MenuNode*> v = rootElement->getVector();
+	//controller->setCurrent(root);
+	Menu::current = ui::root;
+
+	ui::root->useNode = &useRoot;
+
+
+
+	//std::vector<MenuNode*> v = root->getVector();
 
 	/*** Initialise the LCD  ***/
 
@@ -269,69 +285,11 @@ int main() {
 		lcd_display_string("USB mounted", 2);
 	}
 
-	sleep(1);
+	//sleep(1);
 
 	lcd_write(LCD_CLEARDISPLAY, 0);
 
-
-
-
-
-	while(true) {
-
-
-		if(controller->current == rootElement) {
-    		int ret = useRoot();
-    	}
-
-		if(controller->current == setup) {
-			int ret = useSetup();
-		}
-
-		if(controller->current == chooseMuscle) {
-			int ret = useChooseMuscle();
-		}
-
-		if(controller->current == mountUSB) {
-    		int ret = useMountUSB();
-    	}
-
-		if(controller->current == unMountUSB) {
-    		int ret = useUnMountUSB();
-    	}
-
-		if(controller->current == manual) {
-    		int ret = useManualMenuNode();
-    	}
-
-    	if(controller->current == automatic) {
-    		int ret = useAutomatic();
-    	}
-
-    	if(controller->current == shutdownBBB) {
-    		int ret = useShutdownMenuNode();
-
-    		// close the program
-    		return 0;
-    	}
-
-    	if(controller->current == automatic) {
-    		int ret = useAutomatic();
-    	}
-
-    	if(controller->current == pressurePoints) {
-    		int ret = usePressurePoints();
-    	}
-
-    	if(controller->current == uploadToUSB) {
-    		int ret = useUploadToUSB();
-    	}
-
-    	if(controller->current == startProgram) {
-    		int ret = useStartProgram();
-    		cout << "controller current: " << controller->current << endl;
-    	}
-	}
+	int ret = ui::root->useNode();
 
 
 return 0;
@@ -342,34 +300,73 @@ return 0;
 
 int useRoot() {
 
-	displayMenu(rootElement);
+	while(true) {
 
-	while(button1GPIO->getValue() == LOW) {
-		updateDisplay(controller->current);
-		cout << readAnalog(1) << endl;
+		displayMenu(ui::root);
+
+		while(button1GPIO->getValue() == LOW) {
+			updateDisplay(Menu::current);
+		}
+
+		cout << "Button Pressed" << endl;
+		Menu::current = Menu::current->v[Menu::current->vectorCursor];
+		cout << "current has changed to " << Menu::current->getName() << endl;
+
+		switch(ui::root->vectorCursor) {
+		case 0:
+			useSetup();
+			break;
+		case 1:
+			useManual();
+			break;
+		case 2:
+			useAutomatic();
+			break;
+		case 3:
+			useShutdown();
+			break;
+		default:
+			cout << "Miss-aligned vector cursor!" << endl;
+		}
+
 	}
 
-	cout << "Button Pressed" << endl;
-	controller->current = controller->current->v[controller->current->vectorCursor];
-	cout << "current has changed to " << controller->current->getName() << endl;
-
-    return 0;
+    return -1;
 }
 
 int useSetup() {
 
-	displayMenu(setup);
+	while(true) {
 
-	while(button1GPIO->getValue() == LOW) {
-		updateDisplay(controller->current);
+		displayMenu(ui::setup);
+
+		while(button1GPIO->getValue() == LOW) {
+			updateDisplay(Menu::current);
+		}
+
+		cout << "Button Pressed" << endl;
+		Menu::current = Menu::current->v[Menu::current->vectorCursor];
+		cout << "current has changed to " << Menu::current->getName() << endl;
+
+		//lcd_write(LCD_CLEARDISPLAY, 0);
+		encoder->set_position(0);
+
+		switch(ui::setup->vectorCursor) {
+		case 0:
+			return 0;
+		case 1:
+			useChooseMuscle();
+			break;
+		case 2:
+			useMountUSB();
+			break;
+		case 3:
+			useUnMountUSB();
+			break;
+		default:
+			cout << "Miss-aligned vector cursor!" << endl;
+		}
 	}
-
-	cout << "Button Pressed" << endl;
-	controller->current = controller->current->v[controller->current->vectorCursor];
-	cout << "current has changed to " << controller->current->getName() << endl;
-
-	//lcd_write(LCD_CLEARDISPLAY, 0);
-	encoder->set_position(0);
 
 	return 0;
 }
@@ -387,7 +384,7 @@ int useChooseMuscle() {
 
 	lcd_display_string("Choice of Muscle: ", 2);
 
-	//sleep(2);
+	sleep(1);
 
 	while(button1GPIO->getValue() == LOW) {
 
@@ -409,33 +406,32 @@ int useChooseMuscle() {
 	}
 
 	switch (choiceOfMuscle) {
-		case 1:
-			switch1GPIO->streamWrite(HIGH);
-			switch2GPIO->streamWrite(LOW);
-			switch3GPIO->streamWrite(LOW);
-			break;
-		case 2:
-			switch1GPIO->streamWrite(LOW);
-			switch2GPIO->streamWrite(HIGH);
-			switch3GPIO->streamWrite(LOW);
-			break;
-		case 3:
-			switch1GPIO->streamWrite(LOW);
-			switch2GPIO->streamWrite(LOW);
-			switch3GPIO->streamWrite(HIGH);
-			break;
-		default:
-			lcd_display_string("Error", 1);
-			lcd_display_string("Set to default (1)", 1);
-			switch1GPIO->streamWrite(HIGH);
-			switch2GPIO->streamWrite(LOW);
-			switch3GPIO->streamWrite(LOW);
-			break;
+	case 1:
+		switch1GPIO->streamWrite(HIGH);
+		switch2GPIO->streamWrite(LOW);
+		switch3GPIO->streamWrite(LOW);
+		break;
+	case 2:
+		switch1GPIO->streamWrite(LOW);
+		switch2GPIO->streamWrite(HIGH);
+		switch3GPIO->streamWrite(LOW);
+		break;
+	case 3:
+		switch1GPIO->streamWrite(LOW);
+		switch2GPIO->streamWrite(LOW);
+		switch3GPIO->streamWrite(HIGH);
+		break;
+	default:
+		lcd_display_string("Error", 1);
+		lcd_display_string("Set to default (1)", 1);
+		switch1GPIO->streamWrite(HIGH);
+		switch2GPIO->streamWrite(LOW);
+		switch3GPIO->streamWrite(LOW);
 	}
 
 	cout << "Button Pressed" << endl;
-	controller->current = controller->current->v[controller->current->vectorCursor];
-	cout << "current has changed to " << controller->current->getName() << endl;
+	Menu::current = Menu::current->v[Menu::current->vectorCursor];
+	cout << "current has changed to " << Menu::current->getName() << endl;
 
 	// turn the cursor on again
 	lcd_write(LCD_DISPLAYCONTROL | LCD_DISPLAYON |LCD_CURSORON, 0);
@@ -459,8 +455,8 @@ int useMountUSB() {
 	sleep(2);
 
 	lcd_write(LCD_CLEARDISPLAY, 0);
-	controller->current = setup;
-	cout << "current has changed to " << controller->current->getName() << endl;
+	Menu::current = ui::setup;
+	cout << "current has changed to " << Menu::current->getName() << endl;
 	return 0;
 }
 
@@ -478,14 +474,14 @@ int useUnMountUSB() {
 	sleep(2);
 
 	lcd_write(LCD_CLEARDISPLAY, 0);
-	controller->current = setup;
-	cout << "current has changed to " << controller->current->getName() << endl;
+	Menu::current = ui::setup;
+	cout << "current has changed to " << Menu::current->getName() << endl;
 	return 0;
 
 }
 
 
-int useManualMenuNode() {
+int useManual() {
 
 	// Clear the display
 	lcd_write(LCD_CLEARDISPLAY, 0);
@@ -506,17 +502,23 @@ int useManualMenuNode() {
 	while(button1GPIO->getValue() == LOW) {
 		ledGPIO->streamWrite(HIGH);
 
-		pressureSetPoint = encoder->get_position()*100;
+		pressureSetPoint = static_cast<float>(encoder->get_position())*12.5;
 
 		// Don't go negative
 		if(pressureSetPoint < 0) {
 			pressureSetPoint = 0;
 		}
 
-		lcd_display_float(pressureInBar, 3);
-		lcd_display_float(pressureSetPoint, 4);
+
+		lcd_display_float(static_cast<float>(pressureInBar)/1000, 3);
+		lcd_display_float(pressureSetPoint/1000, 4);
 
 		ledGPIO->streamWrite(LOW);
+
+		//float force = readAnalog(choiceOfMuscle)*(111/20)*(40/91);
+		float force = readAnalog(choiceOfMuscle)*2.43956;
+		//*2.43956
+		cout << force << endl;
 	}
 
 	// Terminate the thread
@@ -526,7 +528,7 @@ int useManualMenuNode() {
 	sleep(1);
 
     // Return to the parent MenuNode
-	controller->current = controller->current->v[0];
+	Menu::current = Menu::current->v[0];
 
 	// Turn the cursor back on and clear the display in preparation to show the menu
 	lcd_write(LCD_DISPLAYCONTROL | LCD_DISPLAYON |LCD_CURSORON, 0);
@@ -539,25 +541,42 @@ int useManualMenuNode() {
 
 int useAutomatic() {
 
-	displayMenu(automatic);
+	while(true) {
 
-    while(button1GPIO->getValue() == LOW) {
-    	updateDisplay(controller->current);
-    }
+		displayMenu(ui::automatic);
 
+		while(button1GPIO->getValue() == LOW) {
+			updateDisplay(Menu::current);
+		}
 
-    sleep(0.1);
+		cout << "Button Pressed" << endl;
+		Menu::current = Menu::current->v[Menu::current->vectorCursor];
+		cout << "current has changed to " << Menu::current->getName() << endl;
 
-	cout << "Button Pressed" << endl;
-	controller->current = controller->current->v[controller->current->vectorCursor];
-	cout << "current has changed to " << controller->current->getName() << endl;
+		switch(ui::automatic->vectorCursor) {
+		case 0:
+			return 0;
+		case 1:
+			useProgram();
+			break;
+		case 2:
+			//useSetLengths();
+			break;
+		case 3:
+			useSetPressure();
+			break;
+		case 4:
+			useStartProgram();
+			break;
+		default:
+			cout << "Miss-aligned vector cursor!" << endl;
+		}
+	}
 
-
-
-	return 0;
+	return -1;
 }
 
-int useShutdownMenuNode() {
+int useShutdown() {
 	cout << "run to stop" << endl;
 
 	// Return the valve to 0
@@ -566,16 +585,16 @@ int useShutdownMenuNode() {
 	can0->close_port();
 	system("ifconfig can0 down");
 
-	delete rootElement;
-	delete setup;
-	delete mountUSB;
-	delete runWarmUp;
-	delete manual;
-	delete automatic;
-	delete pressurePoints;
-	delete setLengths;
-	delete startProgram;
-	delete shutdownBBB;
+	delete ui::root;
+	delete ui::setup;
+	delete ui::mountUSB;
+	delete ui::runWarmUp;
+	delete ui::manual;
+	delete ui::automatic;
+	delete ui::pressurePoints;
+	delete ui::setLengths;
+	delete ui::startProgram;
+	delete ui::shutdownBBB;
 
 	prussdrv_exit ();
 
@@ -584,52 +603,153 @@ int useShutdownMenuNode() {
 	return 0;
 }
 
-int usePressurePoints() {
+int useProgram() {
 
-	displayMenu(pressurePoints);
+	while(true) {
+		displayMenu(ui::program);
 
-    usleep(100000);
+		usleep(100000);
 
-	//vectorCursor = (int)controller->current->v.size()-1;
+		//vectorCursor = (int)Menu::current->v.size()-1;
+
+		while(button1GPIO->getValue() == LOW) {
+			updateDisplay(ui::program);
+		}
+
+		cout << "Button Pressed" << endl;
+		Menu::current = Menu::current->v[Menu::current->vectorCursor];
+		cout << "current has changed to " << Menu::current->getName() << endl;
+
+		if(Menu::current == ui::automatic) {
+			return 0;
+		}
+		if(Menu::current == ui::addNewLength) {
+			useAddNewLength();
+
+		} else {
+			useSetPressure();
+			useSetLength();
+		}
+	}
+	return -1;
+}
+
+int useAddNewLength() {
+
+	Menu::MenuNodeFactory *NodeFactory = new Menu::MenuNodeFactory;
+
+	// Move back up a level, because we want to edit the vector of
+	// menuNodes in the level that contains the menuNode addNew and
+	// not addNew itself
+	Menu::current = Menu::current->v[0];
+
+	stringstream menuNodeName;
+    menuNodeName << "Length " << Menu::current->vectorCursor;
+    ui::program->v.insert( Menu::current->v.begin() + Menu::current->vectorCursor, (NodeFactory->createMenuNode(menuNodeName.str())));
+
+
+	Menu::current = Menu::current->v[Menu::current->vectorCursor];
+	cout << "current has changed to " << Menu::current->getName() << endl;
+
+	useSetPressure();
+	useSetLength();
+
+	return 0;
+}
+
+
+int useSetLength() {
+
+	encoder->set_position(Menu::current->length*4);
+
+	//Menu::current = pressurePoints;
+
+	// Clear the display
+	lcd_write(LCD_CLEARDISPLAY, 0);
+
+	lcd_display_string("Set length", 2);
+	//lcd_display_string(Menu::current->getName(), 2);
+	cout << Menu::current->getName() << endl;
+
+	//displayMenu(pressurePoints);
+
+	// turn the cursor off because it's distracting
+	lcd_write(LCD_DISPLAYCONTROL | LCD_DISPLAYON |LCD_CURSOROFF, 0);
+
+
+	sleep(1);
 
 	while(button1GPIO->getValue() == LOW) {
-		updateDisplay(controller->current);
+
+		cout << "Pressure is: " << Menu::current->pressure << endl;
+
+		Menu::current->length = encoder->get_position()/4;
+
+		// Don't go negative
+		if(Menu::current->length < 0) {
+			Menu::current->length = 0;
+		}
+
+		lcd_display_int(Menu::current->length, 6);
 	}
+
+	// turn the cursor on
+	lcd_write(LCD_DISPLAYCONTROL | LCD_DISPLAYON |LCD_CURSORON, 0);
+
+	//clear display
+	lcd_write(LCD_CLEARDISPLAY, 0);
+
+	//encoder->set_position(Menu::current->vectorCursor*-4);
 
 	cout << "Button Pressed" << endl;
-	controller->current = controller->current->v[controller->current->vectorCursor];
-	cout << "current has changed to " << controller->current->getName() << endl;
+	Menu::current = ui::program;
+	cout << "current has changed to " << Menu::current->getName() << endl;
 
+	return 0;
+}
 
+int usePressurePoints() {
 
-	if(controller->current == automatic) {
-		return 0;
+	while(true) {
+		//displayMenu(pressurePoints);
+
+		usleep(100000);
+
+		while(button1GPIO->getValue() == LOW) {
+			updateDisplay(Menu::current);
+		}
+
+		cout << "Button Pressed" << endl;
+		Menu::current = Menu::current->v[Menu::current->vectorCursor];
+		cout << "current has changed to " << Menu::current->getName() << endl;
+
+		if(Menu::current == ui::automatic) {
+			return 0;
+		}
+		if(Menu::current == ui::addNew) {
+			useAddNew();
+
+		} else {
+			useSetPressure();
+			useSetLength();
+		}
 	}
-	if(controller->current == addNew) {
-		useAddNew();
-
-	} else {
-		useSetPressure();
-	}
-
 	return -1;
 }
 
 int useAddNew() {
 
 
-	MenuNodeFactory *NodeFactory = new MenuNodeFactory;
+	Menu::MenuNodeFactory *NodeFactory = new Menu::MenuNodeFactory;
 
 	// Move back up a level, because we want to edit the vector of
 	// menuNodes in the level that contains the menuNode addNew and
 	// not addNew itself
-	controller->current = controller->current->v[0];
+	Menu::current = Menu::current->v[0];
 
 	stringstream menuNodeName;
-    menuNodeName << "Pressure " << controller->current->vectorCursor;
-    controller->current->v.insert( controller->current->v.begin() + controller->current->vectorCursor, (NodeFactory->createMenuNode(menuNodeName.str())));
-
-
+    menuNodeName << "Pressure " << Menu::current->vectorCursor;
+    Menu::current->v.insert( Menu::current->v.begin() + Menu::current->vectorCursor, (NodeFactory->createMenuNode(menuNodeName.str())));
 
 	useSetPressure();
 
@@ -639,31 +759,40 @@ int useAddNew() {
 
 int useSetPressure() {
 
-	controller->current = pressurePoints;
+	usleep(100000);
 
-	encoder->set_position(pressureSetPoint/12.5);
+	float *pres = &Menu::current->pressure;
 
-	displayMenu(pressurePoints);
+	//cout << "initial pressure is: " << static_cast<int>((*pres)*80) << endl;
+	encoder->set_position(static_cast<int>((*pres)*80));
+
+	// Clear the display
+	lcd_write(LCD_CLEARDISPLAY, 0);
+
+	lcd_display_string("Set pressure", 2);
+
+	//lcd_display_string(Menu::current->getName(), 2);
+	//cout << Menu::current->getName() << endl;
+
+	//displayMenu(pressurePoints);
 
 	// turn the cursor off because it's distracting
 	lcd_write(LCD_DISPLAYCONTROL | LCD_DISPLAYON |LCD_CURSOROFF, 0);
 
-
-	int pressureSP;
-
 	while(button1GPIO->getValue() == LOW) {
 
-		pressureSP = encoder->get_position()*12.5;
-
+		cout << *pres << endl;
+		*pres = static_cast<float>(encoder->get_position())/80;
+/*
 		// Don't go negative
-		if(pressureSP < 0) {
-			pressureSP = 0;
+		if(*pres < 0) {
+			*pres = 0;
 		}
-
-		lcd_display_float(pressureSP, controller->current->vectorCursor - controller->current->displayOffset + 5);
+*/
+		lcd_display_float(*pres, 6);
 	}
 
-	controller->current->v[controller->current->vectorCursor]->setPressure(pressureSP);
+	cout << "Pressure is: " << *pres << endl;
 
 	// turn the cursor on
 	lcd_write(LCD_DISPLAYCONTROL | LCD_DISPLAYON |LCD_CURSORON, 0);
@@ -671,11 +800,11 @@ int useSetPressure() {
 	//clear display
 	lcd_write(LCD_CLEARDISPLAY, 0);
 
-	encoder->set_position(controller->current->vectorCursor*-4);
+	//encoder->set_position(Menu::current->vectorCursor*-4);
 
 	cout << "Button Pressed" << endl;
-	controller->current = pressurePoints;
-	cout << "current has changed to " << controller->current->getName() << endl;
+	//Menu::current = program;
+	cout << "current has changed to " << Menu::current->getName() << endl;
 
 	return 0;
 }
@@ -688,14 +817,38 @@ int useStartProgram() {
 	// turn the cursor off because it's distracting
 	lcd_write(LCD_DISPLAYCONTROL | LCD_DISPLAYON |LCD_CURSOROFF, 0);
 
-	for (int i = 1; i < pressurePoints->v.size() - 1; i++) {
-		lcd_display_string(pressurePoints->v[i]->getName(), 1);
-		lcd_display_float(pressurePoints->v[i]->getPressure(), 5);
-		pressureSetPoint = pressurePoints->v[i]->getPressure();
+	for (int i = 1; i < ui::pressurePoints->v.size() - 1; i++) {
+		lcd_display_string(ui::pressurePoints->v[i]->getName(), 1);
+		lcd_display_float(ui::pressurePoints->v[i]->pressure, 5);
+		pressureSetPoint = ui::pressurePoints->v[i]->pressure;
 		startThread(controlfunc);
-		sleep(5);
-		int force = readAnalog(choiceOfMuscle);
-		pressurePoints->v[i]->setForce(force);
+		//sleep(5);
+		float force;
+		int count = 120;
+		while (count > 0) {
+			force = readAnalog(choiceOfMuscle);
+			switch(choiceOfMuscle) {
+			case 1:
+				force = binary2Newton(force);
+				break;
+			case 2:
+				force = force*(47.5+57)/57;
+				break;
+			case 3:
+				force = force*(77.2+33.2)/33.2;
+				break;
+			default:
+				cout << "Error: unable to determine the choice of muscle being used" << endl;
+				return -1;
+			}
+
+			lcd_display_float(pressureInBar, 6);
+			lcd_display_int(static_cast<int>(force), 8);
+			count--;
+		}
+
+		ui::pressurePoints->v[i]->force = force;
+
 		exitThread = true;
 		lcd_write(LCD_CLEARDISPLAY, 0);
 	}
@@ -709,7 +862,7 @@ int useStartProgram() {
 	can0->sendFrame(0x100, 0);
 	sleep(2);
 
-	controller->current = automatic;
+	Menu::current = ui::automatic;
 
 	// turn the cursor on
 	lcd_write(LCD_DISPLAYCONTROL | LCD_DISPLAYON |LCD_CURSORON, 0);
@@ -723,14 +876,14 @@ int useUploadToUSB() {
 	lcd_write(LCD_CLEARDISPLAY, 0);
 
 	ofstream datafile;
-	datafile.open("/mnt/usb/data.txt", ios::out | ios::app | ios::binary);
+	datafile.open("/mnt/usb/data.txt", ios::out | ios::app);
 	if (datafile.is_open()) {
 		cout << "File successfully opened" << endl;
 		lcd_display_string("Writing to file...", 1);
-		for (int i = 1; i < (int)pressurePoints->v.size()-1; i++) {
-			datafile << pressurePoints->v[i]->getName() << " ";
-			datafile << pressurePoints->v[i]->getPressure() << " ";
-			datafile << pressurePoints->v[i]->getForce() << "\n";
+		for (int i = 1; i < (int)ui::pressurePoints->v.size()-1; i++) {
+			datafile << ui::pressurePoints->v[i]->getName() << " ";
+			datafile << ui::pressurePoints->v[i]->pressure << " ";
+			datafile << ui::pressurePoints->v[i]->force << "\n";
 		}
 		datafile.close();
 	} else {
@@ -741,9 +894,8 @@ int useUploadToUSB() {
 	// Allow the user to see that the write has been successful
 	sleep(1);
 
-	controller->current = controller->current->v[0];
-	cout << "current has changed to " << controller->current->getName() << endl;
-
+	Menu::current = Menu::current->v[0];
+	cout << "current has changed to " << Menu::current->getName() << endl;
 
 	return 0;
 }
@@ -787,14 +939,16 @@ void *controlfunc(void *parm)
 	}
 
 	delete pidControl;
-	cout << "exiting thread!" << endl;
+	cout << "exiting thread" << endl;
 	exitThread = false;
 	return NULL;
 }
 
+/*
 int manualPressure(int x) {
 	return 0;
 }
+*/
 
 float binary2Bar(int adcValue) {
 	// The read value into millivolts: *1800/(2^12-1)
@@ -810,6 +964,15 @@ float binary2Bar(int adcValue) {
 
 }
 
+float binary2Newton(int adcValue) {
+	// The read value into millivolts: *1800/(2^12-1)
+	// voltage divider: *(91+20)/20
+	// The two together: (1800/(2^12-1))*(91+20)/20 = 2.43956;
+	float forceAsVoltage = adcValue*1.2238742;
+
+	return forceAsVoltage*327/1000;
+}
+
 // function for the force sensor ADC input
 int readAnalog(int number){
 	stringstream ss;
@@ -821,7 +984,7 @@ int readAnalog(int number){
     return number;
 }
 
-int displayMenu(MenuNode* current) {
+int displayMenu(Menu::MenuNode* current) {
 
 	int *displayOffset = &current->displayOffset;
 
@@ -834,17 +997,17 @@ int displayMenu(MenuNode* current) {
 	lcd_write(LCD_DISPLAYCONTROL | LCD_DISPLAYON |LCD_CURSOROFF, 0);
 
 	for(int i = 0; i < (int)current->v.size() && i<4; i++) {
-		if(*displayOffset+i == 0 && current != rootElement) {
+		if(*displayOffset+i == 0 && current != ui::root) {
 			lcd_display_string("Back", 1);
 		} else {
 			lcd_display_string(current->v[*displayOffset + i]->getName(), i+1);
 		}
 	}
-	if(current == pressurePoints) {
+	if(current == ui::pressurePoints) {
 		for(int i = 0; i < (int)current->v.size()-1 && i<4; i++) {
 			if(*displayOffset+i == 0 || *displayOffset+i == (int)current->v.size()-1) {
 			} else {
-				lcd_display_float(current->v[*displayOffset + i]->getPressure(), i+5);
+				lcd_display_float(current->v[*displayOffset + i]->pressure, i+5);
 			}
 		}
 	}
@@ -855,10 +1018,13 @@ int displayMenu(MenuNode* current) {
 	return 0;
 }
 
-int updateDisplay(MenuNode* current) {
+int updateDisplay(Menu::MenuNode* current) {
 
 	int *vc = &current->vectorCursor;
 	int *displayOffset = &current->displayOffset;
+
+	//cout << "root vc: " << root->vectorCursor << endl;
+	//cout << "automatic vc: " << automatic->vectorCursor << endl;
 
 	// Somehow this only works properly when multiplied by -1
     // which is not the case during MenuNode use...
@@ -880,7 +1046,6 @@ int updateDisplay(MenuNode* current) {
 
 		displayMenu(current);
 	}
-
 	// Execute if the screen needs to be moved up
 	if(*vc < *displayOffset) {
 		(*displayOffset)--;
@@ -889,11 +1054,15 @@ int updateDisplay(MenuNode* current) {
 		displayMenu(current);
 	}
 
-	// Place the cursor at the right position on the screen
+	// Place the cursor at the right position on the display
 	int displayPosition[4] = {0x80, 0xC0, 0x94, 0xD4};
 	lcd_write(displayPosition[*vc - *displayOffset], 0);
 
 
 	return 0;
+}
+
+void debug() {
+	cout << "yo" << endl;
 }
 
