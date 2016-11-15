@@ -14,15 +14,13 @@ int fd;
 // Setup i2c
 void initI2C() {
 	char *dev = "/dev/i2c-2";
-	int addr = 0x27;
 
 	fd = open(dev, O_RDWR );
-
 	if(fd < 0) {
 		perror("Opening i2c device node\n");
-		// return 1;
 	}
 
+	int addr = ADDRESS; // I2C address of the LCD
 	r = ioctl(fd, I2C_SLAVE, addr);
 	if(r < 0) {
 		perror("Selecting i2c device\n");
@@ -71,13 +69,13 @@ void write_cmd(int cmd) {
 // put string function
 void lcd_display_string(std::string string, int line) {
 	if(line == 1)
-		lcd_write(0x81, 0);
+		lcd_write(0x80, 0);
 	if (line == 2)
-		lcd_write(0xC1, 0);
+		lcd_write(0xC0, 0);
 	if (line == 3)
-    	lcd_write(0x95, 0);
+    	lcd_write(0x94, 0);
 	if (line == 4)
-		lcd_write(0xD5, 0);
+		lcd_write(0xD4, 0);
 
 	for (int i = 0; i < string.length(); i++) {
 		char x = string.at(i);
@@ -85,7 +83,7 @@ void lcd_display_string(std::string string, int line) {
 	}
 }
 
-// display int
+// put int function
 // the additional lines (5 to 8) are for placing the
 // cursor along the right hand side of the display
 void lcd_display_int(int var, int line) {
@@ -108,12 +106,25 @@ void lcd_display_int(int var, int line) {
 
 	char buffer[10];
 
-	snprintf(buffer, 10, "%d  ", var);
+	// These if statements arrange the integer
+	// nicely against the edge of the display
+	if (var > 999 && var < 10000) {
+		snprintf(buffer, 10, "%d", var);
+	}
+	if (var > 99 && var < 1000) {
+		snprintf(buffer, 10, " %d", var);
+	}
+	if (var > 9 && var < 100) {
+		snprintf(buffer, 10, "  %d", var);
+	} if (var > -1 && var < 10) {
+		snprintf(buffer, 10, "   %d", var);
+	}
 
 	lcd_display_string(buffer, line);
+
 }
 
-// display float
+// put float function
 // the additional lines (5 to 8) are for placing the
 // cursor along the right hand side of the display
 void lcd_display_float(float var, int line) {
@@ -143,4 +154,12 @@ void lcd_display_float(float var, int line) {
 
 void clearDisplay() {
 	lcd_write(LCD_CLEARDISPLAY, 0);
+}
+
+void displayCursor(bool flag) {
+	if(flag) {
+		lcd_write(LCD_DISPLAYCONTROL | LCD_DISPLAYON |LCD_CURSORON, 0);
+	} else {
+		lcd_write(LCD_DISPLAYCONTROL | LCD_DISPLAYON |LCD_CURSOROFF, 0);
+	}
 }

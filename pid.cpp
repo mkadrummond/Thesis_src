@@ -57,7 +57,7 @@ float PID::calculate( float setpoint, float pv )
     _pre_error = error;
 
     // De-normalise and fit to the 12-bit input of the valve
-    output = 2048*(output+1);
+    output = 2048*(output + 1);
 
     return output;
 }

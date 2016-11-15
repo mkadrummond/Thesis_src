@@ -32,14 +32,11 @@ int showSchedParam(pthread_t thread) {
 	return param.sched_priority;
 }
 
-
-//int startThread(void *(*threadfunc) (void *)) {
 int startThread(void *(*threadfunc) (void *), float *arg) {
 
 	rc = 0;
 	policy = SCHED_RR; 	// Round Robin
 
-	//rc = pthread_create(&thread, NULL, threadfunc, NULL);
 	rc = pthread_create(&thread, NULL, threadfunc, arg);
 	checkResults("pthread_create", rc);
 
@@ -53,3 +50,5 @@ int startThread(void *(*threadfunc) (void *), float *arg) {
 
 	return 0;
 }
+
+

@@ -28,15 +28,15 @@ public:
 	CANSocket();
 	CANSocket(const char *port);
 
-// Functions
-int open_port(const char *);
-int send_port(struct can_frame *);
-void read_port();
-int close_port();
-int initNode(__u8);
-int sendFrame(canid_t, __u16);
+	// Functions
+	int open_port(const char *);
+	int send_port(struct can_frame *);
+	void read_port();
+	int close_port();
+	int initNode(__u8);
+	int sendFrame(canid_t, __u16);
 
-~CANSocket();
+	~CANSocket();
 
 private:
 	int soc;

@@ -2,10 +2,9 @@
  * usb.cpp
  *
  *  Created on: 27 Sep 2016
- *      Author: mkadrummond
+ *      Author: Michael Drummond
  */
 
-#include <stdlib.h>
 #include <iostream>
 #include <sys/mount.h>
 #include <errno.h>
@@ -13,32 +12,31 @@
 #include "usb.h"
 
 
-
 int usb::mountUSB() {
 
-	if (mount("/dev/sda1", "/mnt/usb", "vfat", NULL, NULL)) {
+	if (mount(SOURCEADDR, TARGETADDR, FILESYSTEM, NULL, NULL)) {
 		if (errno == EBUSY) {
-			std::cout << "Mountpoint busy" << std::endl;
-			return -1;
+			std::cout << "Mount point busy" << std::endl;
+			return 0;
 		} else {
 			std::cout << "Mount error: " << strerror(errno) << std::endl;
-			return -2;
+			return -1;
 		}
 	} else {
 		std::cout << "Mount successful" << std::endl;
-		return 0;
+		return 1;
 	}
 
 }
 
 int usb::unmountUSB() {
 
-	if (umount("/mnt/usb")) {
+	if (umount(TARGETADDR)) {
 		std::cout << "Unmount error: " << strerror(errno) << std::endl;
-		return -1;
+		return 0;
 	} else {
 		std::cout << "Unmount successful" << std::endl;
-		return 0;
+		return 1;
 	}
 
 }
