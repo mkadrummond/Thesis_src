@@ -1,3 +1,5 @@
+/// @cond
+
 /*
  * prussdrv.c
  *
@@ -794,3 +796,4 @@ int prussdrv_load_data(int prunum, const unsigned int *code, int codelen)
 
     return 0;
 }
+/// @endcond

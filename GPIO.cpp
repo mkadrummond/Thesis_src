@@ -1,4 +1,5 @@
-/*
+/// @cond
+
  /*
  * GPIO.cpp  Created on: 29 Apr 2014
  * Copyright (c) 2014 Derek Molloy (www.derekmolloy.ie)
@@ -278,3 +279,4 @@ GPIO::~GPIO() {
 }
 
 } /* namespace exploringBB */
+/// @endcond

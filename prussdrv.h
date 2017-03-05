@@ -1,3 +1,4 @@
+/// @cond
 /*
  * prussdrv.h
  *
@@ -201,3 +202,5 @@ extern "C" {
 }
 #endif
 #endif
+/// @endcond
+

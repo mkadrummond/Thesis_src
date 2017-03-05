@@ -1,3 +1,4 @@
+/// @cond
 /*
  * __prussdrv.h
  *
@@ -274,3 +275,4 @@ void __prussintc_set_hmr(volatile unsigned int *pruintc_io,
                                                  (((channel) & 0x3) << 3));
 
 }
+/// @endcond

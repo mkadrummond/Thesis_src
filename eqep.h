@@ -35,22 +35,22 @@ class eQEP
     // Base path for the eQEP unit
     std::string path;
 public:
+
     // Modes of operation for the eQEP hardware
-    typedef enum
-    {
-        // Absolute positioning mode
-        eQEP_Mode_Absolute = 0,
+	typedef enum
+	{
+		// Absolute positioning mode
+		eQEP_Mode_Absolute = 0,
 
-        // Relative positioning mode
-        eQEP_Mode_Relative = 1,
+		// Relative positioning mode
+		eQEP_Mode_Relative = 1,
 
-        // Error flag
-        eQEP_Mode_Error = 2,
-    } eQEP_Mode;
+		// Error flag
+		eQEP_Mode_Error = 2,
+	} eQEP_Mode;
 
     // Default constructor for the eQEP interface driver
-    eQEP();
-    eQEP(std::string _path, eQEP_Mode _mode);
+    eQEP(std::string, eQEP_Mode);
 
     // Reset the value of the encoder
     void set_position(int position);
@@ -59,13 +59,13 @@ public:
     int get_position(bool _poll = true);
 
     // Set the polling period
-    void set_period(long long unsigned int period);
+    void set_period(long long unsigned int);
 
     // Get the polling period of the encoder
     unsigned int get_period();
 
     // Set the mode of the eQEP hardware
-    void set_eqep_mode(eQEP_Mode mode);
+    void set_eqep_mode(eQEP_Mode);
 
     // Get the mode of the eQEP hardware
     eQEP_Mode get_mode();

@@ -5,13 +5,10 @@
  *      Author: mkadrummond
  */
 
-#ifndef LCDDISPLAY_H_
-#define LCDDISPLAY_H_
+#ifndef LCD_H_
+#define LCD_H_
 
 #include <string>
-
-// LCD Address
-#define ADDRESS 0x27
 
 // commands
 #define LCD_CLEARDISPLAY 0x01
@@ -59,25 +56,33 @@
 #define Rw 0b00000010 // Read/Write bit
 #define Rs 0b00000001 // Register select bit
 
-// might use these for the cursor...?
+// Possibly useful for the cursor
 #define LINE1	0x80
 #define LINE2	0xC0
 #define LINE3	0x94
 #define LINE4 	0xD4
 
-// Functions for the display
-void initI2C();
-void initLCD();
-void lcd_strobe(int);
-void lcd_write_four_bits(int);
-void lcd_write(int, int);
-void write_cmd(int);
-void lcd_display_string(std::string, int);
-void lcd_display_int(int, int);
-void lcd_display_float(float, int);
-void clearDisplay();
+class LCD {
+public:
+	LCD();
 
+	int r;
+	int fd;
 
+	void lcd_strobe(int);
+	void lcd_write_four_bits(int);
+	void lcd_write(int, int);
+	void write_cmd(int);
+	void lcd_display_string(std::string, int);
+	void lcd_display_int(int, int);
+	void lcd_display_float(float, int);
 
+	void initLCD();
+	void clearDisplay();
+	void displayCursor(bool);
 
-#endif /* LCDDISPLAY_H_ */
+};
+
+extern LCD *lcd;
+
+#endif /* LCD_H_ */

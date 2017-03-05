@@ -7,11 +7,11 @@
 
 #include "CAN.h"
 #include<iostream>
+#include <sys/ioctl.h>
+
+#define SIOCSCANBAUDRATE	(SIOCDEVPRIVATE+0)
 
 using namespace std;
-
-
-
 
 CANSocket::CANSocket() {
 	soc = NULL;
@@ -22,6 +22,7 @@ CANSocket::CANSocket(const char *port) {
 	open_port(port);
 }
 
+CANSocket::~CANSocket() {}
 
 // Member functions
 int CANSocket::open_port(const char *port)
@@ -58,8 +59,6 @@ int CANSocket::open_port(const char *port)
 }
 
 int CANSocket::initNode(__u8 nodeID) {
-	//__u8 data[2]={0x02, 0x00};
-	//struct can_frame nodeStop = createFrame(0x700, 2, data);
 
 	struct can_frame nodeStop;
 		nodeStop.can_id = 0x700;
@@ -93,13 +92,12 @@ int CANSocket::initNode(__u8 nodeID) {
 	}
 
 	return 0;
-
 }
 
 int CANSocket::send_port(struct can_frame *frame)
 {
     int retval;
-   retval = write(soc, frame, sizeof(struct can_frame));
+    retval = write(this->soc, frame, sizeof(struct can_frame));
     if (retval != sizeof(struct can_frame))
     {
         return (-1);
@@ -110,7 +108,6 @@ int CANSocket::send_port(struct can_frame *frame)
     }
 }
 
-/* this is just an example, run in a thread */
 void CANSocket::read_port()
 {
     struct can_frame frame_rd;
@@ -160,15 +157,13 @@ int CANSocket::close_port()
 }
 
 int CANSocket::sendFrame(canid_t can_id, __u16 data) {
+
 	can_frame frame;
 	frame.can_id = can_id;
 	frame.can_dlc = 3;
 
-	//printf("data = %X \n", data);
 	frame.data[0] = data >> 8;
-	//printf("data[0] = %X \n", frame.data[0]);
 	frame.data[1] = data & 0xFF;
-	//printf("data[1] = %X \n", frame.data[1]);
 	frame.data[2] = 0;
 
 	if (send_port(&frame) < 0) {
@@ -178,11 +173,5 @@ int CANSocket::sendFrame(canid_t can_id, __u16 data) {
 	return 0;
 }
 
-
-
-
-// Destructor
-CANSocket::~CANSocket() {
-}
 
 

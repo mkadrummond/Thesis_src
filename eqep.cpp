@@ -34,9 +34,6 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 
-eQEP::eQEP(){
-}
-
 // Constructor for eQEP driver interface object
 eQEP::eQEP(std::string _path, eQEP::eQEP_Mode _mode)
     : path(_path)

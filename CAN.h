@@ -26,17 +26,16 @@ class CANSocket {
 
 public:
 	CANSocket();
-	CANSocket(const char *port);
+	CANSocket(const char *);
+	~CANSocket();
 
-// Functions
-int open_port(const char *);
-int send_port(struct can_frame *);
-void read_port();
-int close_port();
-int initNode(__u8);
-int sendFrame(canid_t, __u16);
-
-~CANSocket();
+	// Functions
+	int open_port(const char *);
+	int send_port(struct can_frame *);
+	void read_port();
+	int close_port();
+	int initNode(__u8);
+	int sendFrame(canid_t, __u16);
 
 private:
 	int soc;

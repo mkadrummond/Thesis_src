@@ -1,3 +1,5 @@
+/// @cond
+
 /*
  * GPIO.h  Created on: 29 Apr 2014
  * Copyright (c) 2014 Derek Molloy (www.derekmolloy.ie)
@@ -44,6 +46,7 @@ private:
 	string name, path;
 
 public:
+	GPIO();
 	GPIO(int number); //constructor will export the pin
 	virtual int getNumber() { return number; }
 
@@ -99,3 +102,5 @@ void* threadedToggle(void *value);
 } /* namespace exploringBB */
 
 #endif /* GPIO_H_ */
+/// @endcond
+

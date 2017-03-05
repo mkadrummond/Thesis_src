@@ -7,6 +7,7 @@
 #define _PID_SOURCE_
 
 #include <iostream>
+
 #include <cmath>
 #include "pid.h"
 
@@ -26,7 +27,6 @@ PID::PID( float dt, double max, double min, float Kp, float Kd, float Ki ) :
 
 float PID::calculate( float setpoint, float pv )
 {
-
     // Calculate error
     float error = setpoint - pv;
 
@@ -34,17 +34,17 @@ float PID::calculate( float setpoint, float pv )
     error = error/8000;
 
     // Proportional term
-    float Pout = _Kp * error;
+    float Pout = this->_Kp * error;
 
     // Integral term
     _integral += error * _dt;
     float Iout = _Ki * _integral;
 
-    // Derivative term
+	// Derivative term
     float derivative = (error - _pre_error) / _dt;
     float Dout = _Kd * derivative;
 
-    // Calculate total output
+	// Calculate total output
     float output = Pout + Iout + Dout;
 
     // Restrict to max/min
@@ -57,13 +57,11 @@ float PID::calculate( float setpoint, float pv )
     _pre_error = error;
 
     // De-normalise and fit to the 12-bit input of the valve
-    output = 2048*(output+1);
+    output = 2048*(output + 1);
 
     return output;
 }
 
-PID::~PID()
-{
-}
+PID::~PID() {}
 
 #endif
